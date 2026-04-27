@@ -22,6 +22,7 @@ type Vul struct {
 	Extra      string             `bson:"extra" json:"extra"`
 	Result     string             `bson:"result" json:"result"`
 	TaskId     string             `bson:"task_id" json:"taskId"`
+	OrgId      string             `bson:"org_id,omitempty" json:"orgId,omitempty"`
 	VulName    string             `bson:"vul_name,omitempty" json:"vulName,omitempty"`
 	Tags       []string           `bson:"tags,omitempty" json:"tags,omitempty"`
 	CreateTime time.Time          `bson:"create_time" json:"createTime"`
@@ -192,6 +193,7 @@ func (m *VulModel) Upsert(ctx context.Context, doc *Vul) error {
 			"extra":       doc.Extra,
 			"result":      doc.Result,
 			"task_id":     doc.TaskId,
+			"org_id":      doc.OrgId,
 			"update_time": now,
 			// 新增字段 - 漏洞知识库关联
 			"cvss_score":  doc.CvssScore,
@@ -251,6 +253,37 @@ func (m *VulModel) Clear(ctx context.Context) (int64, error) {
 		return 0, err
 	}
 	return result.DeletedCount, nil
+}
+
+// SetOrgIdByHosts — каскадное назначение org_id для уязвимостей по списку host
+func (m *VulModel) SetOrgIdByHosts(ctx context.Context, hosts []string, orgId string) (int64, error) {
+	if len(hosts) == 0 || orgId == "" {
+		return 0, nil
+	}
+	res, err := m.coll.UpdateMany(ctx,
+		bson.M{"host": bson.M{"$in": hosts}},
+		bson.M{"$set": bson.M{"org_id": orgId, "update_time": time.Now()}})
+	if err != nil {
+		return 0, err
+	}
+	return res.ModifiedCount, nil
+}
+
+// ClearOrgIdByHosts — отвязывает org_id у уязвимостей по host (когда host исключают из организации)
+func (m *VulModel) ClearOrgIdByHosts(ctx context.Context, hosts []string, orgId string) (int64, error) {
+	if len(hosts) == 0 {
+		return 0, nil
+	}
+	filter := bson.M{"host": bson.M{"$in": hosts}}
+	if orgId != "" {
+		filter["org_id"] = orgId
+	}
+	res, err := m.coll.UpdateMany(ctx, filter,
+		bson.M{"$unset": bson.M{"org_id": ""}, "$set": bson.M{"update_time": time.Now()}})
+	if err != nil {
+		return 0, err
+	}
+	return res.ModifiedCount, nil
 }
 
 // FindByHostPort 根据host和port查找漏洞列表（用于风险评分计算）

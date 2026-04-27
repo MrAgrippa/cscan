@@ -28,6 +28,7 @@ type ServiceContext struct {
 	UserModel               *model.UserModel
 	WorkspaceModel          *model.WorkspaceModel
 	OrganizationModel       *model.OrganizationModel
+	OrgTargetModel          *model.OrgTargetModel
 	ProfileModel            *model.TaskProfileModel
 	TagMappingModel         *model.TagMappingModel
 	CustomPocModel          *model.CustomPocModel
@@ -128,6 +129,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		UserModel:               model.NewUserModel(mongoDB),
 		WorkspaceModel:          model.NewWorkspaceModel(mongoDB),
 		OrganizationModel:       model.NewOrganizationModel(mongoDB),
+		OrgTargetModel:          model.NewOrgTargetModel(mongoDB),
 		ProfileModel:            model.NewTaskProfileModel(mongoDB),
 		TagMappingModel:         model.NewTagMappingModel(mongoDB),
 		CustomPocModel:          model.NewCustomPocModel(mongoDB),

@@ -216,6 +216,11 @@ func (m *IndexManager) ensureVulIndexes(ctx context.Context, workspaceId string)
 			Keys:    bson.D{{Key: "severity", Value: 1}, {Key: "create_time", Value: -1}},
 			Options: options.Index().SetBackground(true).SetName("idx_severity_createTime"),
 		},
+		// org_id индекс — для фильтрации уязвимостей по организации
+		{
+			Keys:    bson.D{{Key: "org_id", Value: 1}},
+			Options: options.Index().SetBackground(true).SetSparse(true).SetName("idx_org_id"),
+		},
 	}
 
 	return m.createIndexes(ctx, coll, indexes)
@@ -260,6 +265,11 @@ func (m *IndexManager) ensureDirScanResultIndexes(ctx context.Context, workspace
 		{
 			Keys:    bson.D{{Key: "create_time", Value: 1}},
 			Options: options.Index().SetExpireAfterSeconds(30 * 24 * 3600).SetBackground(true).SetName("idx_ttl_create_time"),
+		},
+		// org_id индекс — для фильтрации результатов dirscan по организации
+		{
+			Keys:    bson.D{{Key: "org_id", Value: 1}},
+			Options: options.Index().SetBackground(true).SetSparse(true).SetName("idx_org_id"),
 		},
 	}
 
@@ -357,8 +367,64 @@ func (m *IndexManager) EnsureGlobalIndexes(ctx context.Context) error {
 		logx.Errorf("[IndexManager] Failed to create template indexes: %v", err)
 	}
 
+	// Индексы организации и таргетов
+	if err := m.ensureOrganizationIndexes(ctx); err != nil {
+		logx.Errorf("[IndexManager] Failed to create organization indexes: %v", err)
+	}
+	if err := m.ensureOrgTargetIndexes(ctx); err != nil {
+		logx.Errorf("[IndexManager] Failed to create org_target indexes: %v", err)
+	}
+
 	logx.Info("[IndexManager] Global indexes ensured")
 	return nil
+}
+
+// ensureOrganizationIndexes — индексы коллекции organization
+func (m *IndexManager) ensureOrganizationIndexes(ctx context.Context) error {
+	coll := m.db.Collection("organization")
+	indexes := []mongo.IndexModel{
+		{
+			Keys:    bson.D{{Key: "name", Value: 1}},
+			Options: options.Index().SetUnique(true).SetBackground(true).SetName("idx_org_name_unique"),
+		},
+		{
+			Keys:    bson.D{{Key: "status", Value: 1}},
+			Options: options.Index().SetBackground(true).SetName("idx_org_status"),
+		},
+		{
+			Keys:    bson.D{{Key: "create_time", Value: -1}},
+			Options: options.Index().SetBackground(true).SetName("idx_org_create_time"),
+		},
+	}
+	return m.createIndexes(ctx, coll, indexes)
+}
+
+// ensureOrgTargetIndexes — индексы коллекции org_target
+func (m *IndexManager) ensureOrgTargetIndexes(ctx context.Context) error {
+	coll := m.db.Collection("org_target")
+	indexes := []mongo.IndexModel{
+		{
+			Keys:    bson.D{{Key: "org_id", Value: 1}},
+			Options: options.Index().SetBackground(true).SetName("idx_org_id"),
+		},
+		{
+			Keys:    bson.D{{Key: "org_id", Value: 1}, {Key: "value", Value: 1}},
+			Options: options.Index().SetUnique(true).SetBackground(true).SetName("idx_org_value_unique"),
+		},
+		{
+			Keys:    bson.D{{Key: "type", Value: 1}},
+			Options: options.Index().SetBackground(true).SetName("idx_orgtarget_type"),
+		},
+		{
+			Keys:    bson.D{{Key: "value", Value: 1}},
+			Options: options.Index().SetBackground(true).SetName("idx_orgtarget_value"),
+		},
+		{
+			Keys:    bson.D{{Key: "enabled", Value: 1}},
+			Options: options.Index().SetBackground(true).SetName("idx_orgtarget_enabled"),
+		},
+	}
+	return m.createIndexes(ctx, coll, indexes)
 }
 
 func (m *IndexManager) ensureUserIndexes(ctx context.Context) error {

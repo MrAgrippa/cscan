@@ -440,6 +440,71 @@ func (m *AssetModel) AddLabel(ctx context.Context, id string, label string) erro
 	return err
 }
 
+// SetOrgIdByIds — массово назначает org_id указанным ассетам (если orgId="" — отвязывает)
+func (m *AssetModel) SetOrgIdByIds(ctx context.Context, ids []string, orgId string) (int64, error) {
+	oids := make([]primitive.ObjectID, 0, len(ids))
+	for _, id := range ids {
+		if oid, err := primitive.ObjectIDFromHex(id); err == nil {
+			oids = append(oids, oid)
+		}
+	}
+	if len(oids) == 0 {
+		return 0, nil
+	}
+	var update bson.M
+	if orgId == "" {
+		update = bson.M{
+			"$unset": bson.M{"org_id": ""},
+			"$set":   bson.M{"update_time": time.Now()},
+		}
+	} else {
+		update = bson.M{
+			"$set": bson.M{"org_id": orgId, "update_time": time.Now()},
+		}
+	}
+	res, err := m.coll.UpdateMany(ctx, bson.M{"_id": bson.M{"$in": oids}}, update)
+	if err != nil {
+		return 0, err
+	}
+	return res.ModifiedCount, nil
+}
+
+// SetOrgIdByHosts — массово назначает org_id ассетам по списку host (используется для retag по таргетам организации)
+func (m *AssetModel) SetOrgIdByHosts(ctx context.Context, hosts []string, orgId string) (int64, error) {
+	if len(hosts) == 0 || orgId == "" {
+		return 0, nil
+	}
+	res, err := m.coll.UpdateMany(ctx,
+		bson.M{"host": bson.M{"$in": hosts}},
+		bson.M{"$set": bson.M{"org_id": orgId, "update_time": time.Now()}})
+	if err != nil {
+		return 0, err
+	}
+	return res.ModifiedCount, nil
+}
+
+// FindHostsAndIPs — возвращает host и authority всех ассетов (используется для retag)
+func (m *AssetModel) FindHostsAndIPs(ctx context.Context) ([]Asset, error) {
+	opts := options.Find().SetProjection(bson.M{
+		"_id":       1,
+		"host":      1,
+		"authority": 1,
+		"domain":    1,
+		"ip":        1,
+		"org_id":    1,
+	})
+	cursor, err := m.coll.Find(ctx, bson.M{}, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	var docs []Asset
+	if err := cursor.All(ctx, &docs); err != nil {
+		return nil, err
+	}
+	return docs, nil
+}
+
 // RemoveLabel 删除单个标签
 func (m *AssetModel) RemoveLabel(ctx context.Context, id string, label string) error {
 	oid, err := primitive.ObjectIDFromHex(id)

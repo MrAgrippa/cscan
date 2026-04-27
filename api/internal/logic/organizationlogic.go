@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// OrganizationListLogic 组织列表
+// OrganizationListLogic — список организаций
 type OrganizationListLogic struct {
 	logx.Logger
 	ctx    context.Context
@@ -31,12 +31,12 @@ func (l *OrganizationListLogic) OrganizationList(req *types.PageReq) (resp *type
 
 	total, err := l.svcCtx.OrganizationModel.Count(l.ctx, filter)
 	if err != nil {
-		return &types.OrganizationListResp{Code: 500, Msg: "查询失败"}, nil
+		return &types.OrganizationListResp{Code: 500, Msg: "Ошибка получения списка"}, nil
 	}
 
 	orgs, err := l.svcCtx.OrganizationModel.Find(l.ctx, filter, req.Page, req.PageSize)
 	if err != nil {
-		return &types.OrganizationListResp{Code: 500, Msg: "查询失败"}, nil
+		return &types.OrganizationListResp{Code: 500, Msg: "Ошибка получения списка"}, nil
 	}
 
 	list := make([]types.Organization, 0, len(orgs))
@@ -58,7 +58,7 @@ func (l *OrganizationListLogic) OrganizationList(req *types.PageReq) (resp *type
 	}, nil
 }
 
-// OrganizationSaveLogic 保存组织
+// OrganizationSaveLogic — создание/обновление организации
 type OrganizationSaveLogic struct {
 	logx.Logger
 	ctx    context.Context
@@ -74,8 +74,11 @@ func NewOrganizationSaveLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *OrganizationSaveLogic) OrganizationSave(req *types.OrganizationSaveReq) (resp *types.BaseResp, err error) {
+	if req.Name == "" {
+		return &types.BaseResp{Code: 400, Msg: "Название организации обязательно"}, nil
+	}
+
 	if req.Id != "" {
-		// 更新
 		update := bson.M{
 			"name":        req.Name,
 			"description": req.Description,
@@ -85,24 +88,23 @@ func (l *OrganizationSaveLogic) OrganizationSave(req *types.OrganizationSaveReq)
 		}
 		err = l.svcCtx.OrganizationModel.Update(l.ctx, req.Id, update)
 		if err != nil {
-			return &types.BaseResp{Code: 500, Msg: "更新失败"}, nil
+			return &types.BaseResp{Code: 500, Msg: "Ошибка обновления"}, nil
 		}
-		return &types.BaseResp{Code: 0, Msg: "更新成功"}, nil
+		return &types.BaseResp{Code: 0, Msg: "Организация обновлена"}, nil
 	}
 
-	// 新增
 	org := &model.Organization{
 		Name:        req.Name,
 		Description: req.Description,
 	}
 	if err = l.svcCtx.OrganizationModel.Insert(l.ctx, org); err != nil {
-		return &types.BaseResp{Code: 500, Msg: "创建失败"}, nil
+		return &types.BaseResp{Code: 500, Msg: "Ошибка создания"}, nil
 	}
 
-	return &types.BaseResp{Code: 0, Msg: "创建成功"}, nil
+	return &types.BaseResp{Code: 0, Msg: "Организация создана"}, nil
 }
 
-// OrganizationDeleteLogic 删除组织
+// OrganizationDeleteLogic — удаление организации (каскадно — все таргеты)
 type OrganizationDeleteLogic struct {
 	logx.Logger
 	ctx    context.Context
@@ -119,17 +121,24 @@ func NewOrganizationDeleteLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 
 func (l *OrganizationDeleteLogic) OrganizationDelete(req *types.OrganizationDeleteReq) (resp *types.BaseResp, err error) {
 	if req.Id == "" {
-		return &types.BaseResp{Code: 400, Msg: "ID不能为空"}, nil
+		return &types.BaseResp{Code: 400, Msg: "ID не может быть пустым"}, nil
 	}
 
 	if err = l.svcCtx.OrganizationModel.Delete(l.ctx, req.Id); err != nil {
-		return &types.BaseResp{Code: 500, Msg: "删除失败"}, nil
+		return &types.BaseResp{Code: 500, Msg: "Ошибка удаления"}, nil
 	}
 
-	return &types.BaseResp{Code: 0, Msg: "删除成功"}, nil
+	// Каскадно удаляем все таргеты этой организации
+	if l.svcCtx.OrgTargetModel != nil {
+		if err := l.svcCtx.OrgTargetModel.DeleteByOrg(l.ctx, req.Id); err != nil {
+			l.Errorf("Ошибка удаления таргетов организации %s: %v", req.Id, err)
+		}
+	}
+
+	return &types.BaseResp{Code: 0, Msg: "Организация удалена"}, nil
 }
 
-// OrganizationUpdateStatusLogic 更新组织状态
+// OrganizationUpdateStatusLogic — изменение статуса организации
 type OrganizationUpdateStatusLogic struct {
 	logx.Logger
 	ctx    context.Context
@@ -146,16 +155,16 @@ func NewOrganizationUpdateStatusLogic(ctx context.Context, svcCtx *svc.ServiceCo
 
 func (l *OrganizationUpdateStatusLogic) OrganizationUpdateStatus(req *types.OrganizationUpdateStatusReq) (resp *types.BaseResp, err error) {
 	if req.Id == "" {
-		return &types.BaseResp{Code: 400, Msg: "ID不能为空"}, nil
+		return &types.BaseResp{Code: 400, Msg: "ID не может быть пустым"}, nil
 	}
 	if req.Status == "" {
-		return &types.BaseResp{Code: 400, Msg: "状态不能为空"}, nil
+		return &types.BaseResp{Code: 400, Msg: "Статус не может быть пустым"}, nil
 	}
 
 	err = l.svcCtx.OrganizationModel.Update(l.ctx, req.Id, bson.M{"status": req.Status})
 	if err != nil {
-		return &types.BaseResp{Code: 500, Msg: "更新状态失败"}, nil
+		return &types.BaseResp{Code: 500, Msg: "Ошибка обновления статуса"}, nil
 	}
 
-	return &types.BaseResp{Code: 0, Msg: "状态更新成功"}, nil
+	return &types.BaseResp{Code: 0, Msg: "Статус обновлён"}, nil
 }

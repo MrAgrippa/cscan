@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="theme-demo">
     <div class="dark-card">
       <div class="card-header">
@@ -55,7 +55,7 @@
         <div class="language-section">
           <h4>{{ $t('settings.language') }}</h4>
           <el-radio-group v-model="localeStore.currentLocale" @change="localeStore.changeLocale">
-            <el-radio label="zh-CN">简体中文</el-radio>
+            <el-radio label="ru-RU">Русский</el-radio>
             <el-radio label="en-US">English</el-radio>
           </el-radio-group>
         </div>

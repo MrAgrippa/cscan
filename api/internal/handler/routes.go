@@ -138,11 +138,22 @@ func RegisterHandlers(server *rest.Server, svcCtx *svc.ServiceContext) {
 		{Method: http.MethodPost, Path: "/api/v1/workspace/save", Handler: workspace.WorkspaceSaveHandler(svcCtx)},
 		{Method: http.MethodPost, Path: "/api/v1/workspace/delete", Handler: workspace.WorkspaceDeleteHandler(svcCtx)},
 
-		// 组织管理
+		// Управление организациями
 		{Method: http.MethodPost, Path: "/api/v1/organization/list", Handler: organization.OrganizationListHandler(svcCtx)},
 		{Method: http.MethodPost, Path: "/api/v1/organization/save", Handler: organization.OrganizationSaveHandler(svcCtx)},
 		{Method: http.MethodPost, Path: "/api/v1/organization/delete", Handler: organization.OrganizationDeleteHandler(svcCtx)},
 		{Method: http.MethodPost, Path: "/api/v1/organization/updateStatus", Handler: organization.OrganizationUpdateStatusHandler(svcCtx)},
+
+		// Таргеты организации
+		{Method: http.MethodPost, Path: "/api/v1/organization/target/list", Handler: organization.OrgTargetListHandler(svcCtx)},
+		{Method: http.MethodPost, Path: "/api/v1/organization/target/save", Handler: organization.OrgTargetSaveHandler(svcCtx)},
+		{Method: http.MethodPost, Path: "/api/v1/organization/target/import", Handler: organization.OrgTargetImportHandler(svcCtx)},
+		{Method: http.MethodPost, Path: "/api/v1/organization/target/update", Handler: organization.OrgTargetUpdateHandler(svcCtx)},
+		{Method: http.MethodPost, Path: "/api/v1/organization/target/delete", Handler: organization.OrgTargetDeleteHandler(svcCtx)},
+
+		// Привязка ассетов и retag
+		{Method: http.MethodPost, Path: "/api/v1/organization/asset/assign", Handler: organization.OrgAssignAssetsHandler(svcCtx)},
+		{Method: http.MethodPost, Path: "/api/v1/organization/retag", Handler: organization.OrgRetagHandler(svcCtx)},
 
 		// 资产管理
 		{Method: http.MethodPost, Path: "/api/v1/asset/list", Handler: asset.AssetListHandler(svcCtx)},

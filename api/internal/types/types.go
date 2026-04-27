@@ -138,6 +138,122 @@ type OrganizationUpdateStatusReq struct {
 	Status string `json:"status"`
 }
 
+// Organization detail with extra info (assets count, targets count)
+type OrganizationDetail struct {
+	Id           string `json:"id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	Status       string `json:"status"`
+	CreateTime   string `json:"createTime"`
+	UpdateTime   string `json:"updateTime"`
+	TargetsCount int    `json:"targetsCount"`
+	AssetsCount  int    `json:"assetsCount"`
+	VulsCount    int    `json:"vulsCount"`
+}
+
+type OrganizationDetailResp struct {
+	Code int                `json:"code"`
+	Msg  string             `json:"msg"`
+	Data OrganizationDetail `json:"data"`
+}
+
+// ==================== Таргеты организации ====================
+type OrgTarget struct {
+	Id          string `json:"id"`
+	OrgId       string `json:"orgId"`
+	Type        string `json:"type"`        // ip | cidr | domain | wildcard
+	Value       string `json:"value"`
+	Description string `json:"description"`
+	Enabled     bool   `json:"enabled"`
+	CreateTime  string `json:"createTime"`
+}
+
+type OrgTargetListReq struct {
+	OrgId    string `form:"orgId"`
+	Search   string `form:"search,optional"`
+	Type     string `form:"type,optional"`
+	Page     int    `form:"page,default=1"`
+	PageSize int    `form:"pageSize,default=20"`
+}
+
+type OrgTargetListResp struct {
+	Code  int         `json:"code"`
+	Msg   string      `json:"msg"`
+	Total int         `json:"total"`
+	List  []OrgTarget `json:"list"`
+}
+
+type OrgTargetItem struct {
+	Type        string `json:"type,optional"`
+	Value       string `json:"value"`
+	Description string `json:"description,optional"`
+}
+
+type OrgTargetSaveReq struct {
+	OrgId   string          `json:"orgId"`
+	Items   []OrgTargetItem `json:"items"`
+}
+
+type OrgTargetSaveResp struct {
+	Code     int    `json:"code"`
+	Msg      string `json:"msg"`
+	Inserted int    `json:"inserted"`
+	Skipped  int    `json:"skipped"`
+}
+
+type OrgTargetUpdateReq struct {
+	Id          string `json:"id"`
+	Value       string `json:"value,optional"`
+	Type        string `json:"type,optional"`
+	Description string `json:"description,optional"`
+	Enabled     *bool  `json:"enabled,optional"`
+}
+
+type OrgTargetDeleteReq struct {
+	Ids []string `json:"ids"`
+}
+
+// Импорт строк (вставка списка через перенос строки или запятую)
+type OrgTargetImportReq struct {
+	OrgId string `json:"orgId"`
+	Text  string `json:"text"`
+}
+
+// Привязка/отвязка ассетов к организации вручную
+type OrgAssignAssetsReq struct {
+	WorkspaceId string   `json:"workspaceId,optional"`
+	OrgId       string   `json:"orgId"`
+	AssetIds    []string `json:"assetIds"`
+}
+
+type OrgAssignAssetsResp struct {
+	Code     int    `json:"code"`
+	Msg      string `json:"msg"`
+	Modified int    `json:"modified"`
+}
+
+// Получение ассетов привязанных к организации
+type OrgAssetsListReq struct {
+	WorkspaceId string `form:"workspaceId,optional"`
+	OrgId       string `form:"orgId"`
+	Search      string `form:"search,optional"`
+	Page        int    `form:"page,default=1"`
+	PageSize    int    `form:"pageSize,default=20"`
+}
+
+// Запуск ре-индексации (re-tag) ассетов по таргетам всех организаций
+type OrgRetagReq struct {
+	WorkspaceId string `json:"workspaceId,optional"`
+	OrgId       string `json:"orgId,optional"` // если задан — только для одной организации
+}
+
+type OrgRetagResp struct {
+	Code     int    `json:"code"`
+	Msg      string `json:"msg"`
+	Matched  int    `json:"matched"`
+	Updated  int    `json:"updated"`
+}
+
 // ==================== 资产管理 ====================
 
 // IPV4Info IPv4地址信息
