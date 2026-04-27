@@ -13,7 +13,7 @@ export const useLocaleStore = defineStore('locale', () => {
   }
 
   function toggleLocale() {
-    const newLocale = currentLocale.value === 'zh-CN' ? 'en-US' : 'zh-CN'
+    const newLocale = currentLocale.value === 'ru-RU' ? 'en-US' : 'ru-RU'
     changeLocale(newLocale)
   }
 

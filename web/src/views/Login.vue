@@ -1,11 +1,11 @@
-﻿<template>
+<template>
   <div class="login-container">
     <!-- 主题和语言切换按钮 -->
     <div class="controls">
       <!-- 语言切换 -->
       <div class="control-btn" @click="localeStore.toggleLocale">
         <el-icon><Position /></el-icon>
-        <span>{{ localeStore.currentLocale === 'zh-CN' ? 'EN' : '中' }}</span>
+        <span>{{ localeStore.currentLocale === 'ru-RU' ? 'EN' : 'RU' }}</span>
       </div>
       <!-- 主题切换 -->
       <div class="control-btn" @click="themeStore.toggleTheme">

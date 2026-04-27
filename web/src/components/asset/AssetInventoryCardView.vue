@@ -1006,7 +1006,7 @@ const loadAssetHistory = async (assetId) => {
   const formatDateTime = (dateStr) => {
   if (!dateStr) return ''
   const date = new Date(dateStr)
-  return date.toLocaleString('zh-CN', {
+  return date.toLocaleString('ru-RU', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',

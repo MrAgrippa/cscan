@@ -400,7 +400,7 @@ const compareSelectedVersions = async () => {
 const formatTimestamp = (timestamp) => {
   if (!timestamp) return ''
   const date = new Date(timestamp)
-  return date.toLocaleString('zh-CN', {
+  return date.toLocaleString('ru-RU', {
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
@@ -412,7 +412,7 @@ const formatTimestamp = (timestamp) => {
 const formatDateTime = (timestamp) => {
   if (!timestamp) return ''
   const date = new Date(timestamp)
-  return date.toLocaleString('zh-CN', {
+  return date.toLocaleString('ru-RU', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',

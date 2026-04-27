@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import ElementPlus from 'element-plus'
-import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+import ruRu from 'element-plus/dist/locale/ru.mjs'
 import enUs from 'element-plus/dist/locale/en.mjs'
 import 'element-plus/dist/index.css'
 // 引入 Element Plus 官方暗黑模式样式
@@ -27,7 +27,7 @@ setupI18n(app)
 
 // 根据当前语言设置 Element Plus 语言
 const currentLocale = i18n.global.locale.value
-const elementLocale = currentLocale === 'zh-CN' ? zhCn : enUs
+const elementLocale = currentLocale === 'ru-RU' ? ruRu : enUs
 app.use(ElementPlus, { locale: elementLocale })
 
 // 监听语言变化，更新 Element Plus 语言
