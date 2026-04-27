@@ -534,6 +534,7 @@ type AssetGroupsReq struct {
 	Page     int    `json:"page,default=1"`
 	PageSize int    `json:"pageSize,default=20"`
 	Query    string `json:"query,optional"` // 搜索关键词
+	OrgId    string `json:"orgId,optional"` // фильтр по организации
 }
 
 type AssetGroup struct {
@@ -580,6 +581,7 @@ type AssetInventoryReq struct {
 	GroupId                  string   `json:"groupId,optional"`                  // 资产分组ID
 	Domain                   string   `json:"domain,optional"`                   // 域名过滤
 	RequireRecognitionOrShot bool     `json:"requireRecognitionOrShot,optional"` // 只显示有技术栈或截图的资产
+	OrgId                    string   `json:"orgId,optional"`                    // фильтр по организации
 }
 
 type AssetInventoryItem struct {
@@ -627,6 +629,7 @@ type ScreenshotsReq struct {
 	SortBy        string   `json:"sortBy,optional"`        // 排序字段: time/name
 	Domain        string   `json:"domain,optional"`        // 域名过滤
 	HasScreenshot bool     `json:"hasScreenshot,optional"` // 只显示有截图的
+	OrgId         string   `json:"orgId,optional"`         // фильтр по организации
 }
 
 type ScreenshotItem struct {
@@ -737,6 +740,8 @@ type MainTask struct {
 	SubTaskCount int      `json:"subTaskCount"` // 子任务总数
 	SubTaskDone  int      `json:"subTaskDone"`  // 已完成子任务数
 	WorkspaceId  string   `json:"workspaceId"`  // 所属工作空间ID
+	OrgId        string   `json:"orgId,omitempty"`
+	OrgName      string   `json:"orgName,omitempty"`
 }
 
 type MainTaskListReq struct {
@@ -745,6 +750,7 @@ type MainTaskListReq struct {
 	Name        string   `json:"name,optional"`
 	Status      string   `json:"status,optional"`
 	Tags        []string `json:"tags,optional"`        // 标签过滤
+	OrgId       string   `json:"orgId,optional"`       // фильтр по организации
 	WorkspaceId string   `json:"workspaceId,optional"` // 支持从请求体传递，优先级高于header
 }
 
@@ -920,6 +926,7 @@ type VulListReq struct {
 	Source    string `json:"source,optional"`
 	Host      string `json:"host,optional"`
 	Port      int    `json:"port,optional"`
+	OrgId     string `json:"orgId,optional"`
 }
 
 type VulListResp struct {

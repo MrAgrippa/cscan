@@ -61,6 +61,10 @@ func (l *VulListLogic) VulList(req *types.VulListReq, workspaceId string) (resp 
 	if req.Source != "" {
 		filter["source"] = req.Source
 	}
+	// Фильтр по организации
+	if req.OrgId != "" {
+		filter["org_id"] = req.OrgId
+	}
 	// 支持按host和port筛选（用于资产详情页查询漏洞）
 	if req.Host != "" {
 		filter["host"] = req.Host

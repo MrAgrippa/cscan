@@ -60,6 +60,11 @@ func (l *AssetInventoryLogic) buildInventoryFilter(req *types.AssetInventoryReq)
 		filter["host"] = bson.M{"$regex": req.Domain, "$options": "i"}
 	}
 
+	// Фильтр по организации
+	if req.OrgId != "" {
+		filter["org_id"] = req.OrgId
+	}
+
 	// 端口过滤
 	if len(req.Ports) > 0 {
 		filter["port"] = bson.M{"$in": req.Ports}

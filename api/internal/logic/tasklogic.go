@@ -76,6 +76,9 @@ func (l *MainTaskListLogic) MainTaskList(req *types.MainTaskListReq, workspaceId
 	if len(req.Tags) > 0 {
 		filter["tags"] = bson.M{"$in": req.Tags}
 	}
+	if req.OrgId != "" {
+		filter["org_id"] = req.OrgId
+	}
 
 	var total int64
 

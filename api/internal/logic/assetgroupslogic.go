@@ -45,9 +45,15 @@ func (l *AssetGroupsLogic) AssetGroups(req *types.AssetGroupsReq, workspaceId st
 	for _, wsId := range wsIds {
 		// 1. 先从任务中提取目标域名，创建初始分组
 		taskModel := l.svcCtx.GetMainTaskModel(wsId)
-		
+
+		// Фильтр задач по организации (если задан)
+		taskFilter := bson.M{}
+		if req.OrgId != "" {
+			taskFilter["org_id"] = req.OrgId
+		}
+
 		// 使用自定义排序查询，按 update_time 降序排序（获取最新状态的任务）
-		tasks, err := taskModel.FindAllWithSort(l.ctx, bson.M{}, bson.D{{Key: "update_time", Value: -1}})
+		tasks, err := taskModel.FindAllWithSort(l.ctx, taskFilter, bson.D{{Key: "update_time", Value: -1}})
 		if err != nil {
 			l.Logger.Errorf("查询工作空间 %s 任务失败: %v", wsId, err)
 			continue
@@ -127,6 +133,9 @@ func (l *AssetGroupsLogic) AssetGroups(req *types.AssetGroupsReq, workspaceId st
 
 		// 查询所有资产
 		filter := bson.M{}
+		if req.OrgId != "" {
+			filter["org_id"] = req.OrgId
+		}
 		assets, err := assetModel.Find(l.ctx, filter, 0, 0)
 		if err != nil {
 			l.Logger.Errorf("查询工作空间 %s 资产失败: %v", wsId, err)
