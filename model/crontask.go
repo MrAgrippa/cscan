@@ -20,6 +20,7 @@ type CronTask struct {
 	CronSpec     string             `bson:"cron_spec" json:"cronSpec"`
 	ScheduleTime string             `bson:"schedule_time" json:"scheduleTime"`
 	WorkspaceId  string             `bson:"workspace_id" json:"workspaceId"`
+	OrgId        string             `bson:"org_id,omitempty" json:"orgId,omitempty"`
 	MainTaskId   string             `bson:"main_task_id" json:"mainTaskId"`
 	TaskName     string             `bson:"task_name" json:"taskName"`
 	Target       string             `bson:"target" json:"target"`

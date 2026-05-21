@@ -16,6 +16,7 @@ type DirScanResult struct {
 	WorkspaceId   string             `bson:"workspace_id" json:"workspaceId"`
 	MainTaskId    string             `bson:"main_task_id" json:"mainTaskId"`
 	Authority     string             `bson:"authority" json:"authority"`
+	OrgId         string             `bson:"org_id,omitempty" json:"orgId,omitempty"`
 	Host          string             `bson:"host" json:"host"`
 	Port          int                `bson:"port" json:"port"`
 	URL           string             `bson:"url" json:"url"`
@@ -294,6 +295,36 @@ func (m *DirScanResultModel) DeleteByFilter(ctx context.Context, filter bson.M) 
 }
 
 // Stat 统计信息
+// SetOrgIdByHosts — каскадное назначение org_id для результатов dirscan по списку host
+func (m *DirScanResultModel) SetOrgIdByHosts(ctx context.Context, hosts []string, orgId string) (int64, error) {
+	if len(hosts) == 0 || orgId == "" {
+		return 0, nil
+	}
+	res, err := m.coll.UpdateMany(ctx,
+		bson.M{"host": bson.M{"$in": hosts}},
+		bson.M{"$set": bson.M{"org_id": orgId}})
+	if err != nil {
+		return 0, err
+	}
+	return res.ModifiedCount, nil
+}
+
+// ClearOrgIdByHosts — отвязывает org_id у dirscan-результатов по host
+func (m *DirScanResultModel) ClearOrgIdByHosts(ctx context.Context, hosts []string, orgId string) (int64, error) {
+	if len(hosts) == 0 {
+		return 0, nil
+	}
+	filter := bson.M{"host": bson.M{"$in": hosts}}
+	if orgId != "" {
+		filter["org_id"] = orgId
+	}
+	res, err := m.coll.UpdateMany(ctx, filter, bson.M{"$unset": bson.M{"org_id": ""}})
+	if err != nil {
+		return 0, err
+	}
+	return res.ModifiedCount, nil
+}
+
 func (m *DirScanResultModel) Stat(ctx context.Context, workspaceId string) (map[string]int64, error) {
 	filter := bson.M{}
 	if workspaceId != "" && workspaceId != "all" {

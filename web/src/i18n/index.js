@@ -1,46 +1,46 @@
 import { createI18n } from 'vue-i18n'
 
-// 导入语言文件
-import zhCN from './locales/zh-CN.json'
+// Импорт языковых файлов
+import ruRU from './locales/ru-RU.json'
 import enUS from './locales/en-US.json'
 
-export const SUPPORT_LOCALES = ['zh-CN', 'en-US']
-export const DEFAULT_LOCALE = 'zh-CN'
+export const SUPPORT_LOCALES = ['ru-RU', 'en-US']
+export const DEFAULT_LOCALE = 'ru-RU'
 
-// 获取浏览器语言
+// Определение языка по браузеру
 function getDefaultLocale() {
   const locale = navigator.language
-  if (locale.startsWith('zh')) {
-    return 'zh-CN'
+  if (locale && locale.toLowerCase().startsWith('en')) {
+    return 'en-US'
   }
-  return 'en-US'
+  return 'ru-RU'
 }
 
-// 创建 i18n 实例
+// Создание экземпляра i18n
 export const i18n = createI18n({
   legacy: false,
   locale: localStorage.getItem('locale') || getDefaultLocale(),
-  fallbackLocale: DEFAULT_LOCALE,
+  fallbackLocale: 'en-US',
   globalInjection: true,
   messages: {
-    'zh-CN': zhCN,
+    'ru-RU': ruRU,
     'en-US': enUS,
   },
 })
 
-// 切换语言
+// Переключение языка
 export function setLocale(locale) {
   i18n.global.locale.value = locale
   localStorage.setItem('locale', locale)
   document.documentElement.lang = locale
 }
 
-// 获取当前语言
+// Получение текущего языка
 export function getLocale() {
   return i18n.global.locale.value
 }
 
-// 安装插件
+// Установка плагина
 export function setupI18n(app) {
   app.use(i18n)
 }

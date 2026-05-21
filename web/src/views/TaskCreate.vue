@@ -16,6 +16,27 @@
         </el-form-item>
         <el-form-item :label="$t('task.scanTarget')" prop="target">
           <el-input v-model="form.target" type="textarea" :rows="6" :placeholder="$t('task.targetPlaceholder')" />
+          <div class="target-helpers">
+            <el-button
+              size="small"
+              :disabled="!form.orgId"
+              :loading="loadingOrgTargets"
+              @click="loadTargetsFromOrg"
+            >
+              {{ $t('task.loadTargetsFromOrg', 'Загрузить таргеты из организации') }}
+            </el-button>
+            <el-button
+              size="small"
+              :disabled="!form.orgId"
+              :loading="loadingOrgAssets"
+              @click="loadAssetsFromOrg"
+            >
+              {{ $t('task.loadAssetsFromOrg', 'Загрузить ассеты организации') }}
+            </el-button>
+            <span v-if="!form.orgId" class="form-hint">
+              {{ $t('task.selectOrgFirst', 'Сначала выберите организацию') }}
+            </span>
+          </div>
         </el-form-item>
         <el-row :gutter="20">
           <el-col :span="12">
@@ -1243,6 +1264,64 @@ async function loadOrganizations() {
   } catch (e) { console.error(e) }
 }
 
+const loadingOrgTargets = ref(false)
+const loadingOrgAssets = ref(false)
+
+async function loadTargetsFromOrg() {
+  if (!form.orgId) return
+  loadingOrgTargets.value = true
+  try {
+    const res = await request.post('/organization/target/list', {
+      orgId: form.orgId,
+      page: 1,
+      pageSize: 5000
+    })
+    if (res.code === 0) {
+      const list = (res.list || []).filter(t => t.enabled !== false).map(t => t.value)
+      const existing = (form.target || '').split(/[\s,;]+/).map(s => s.trim()).filter(Boolean)
+      const merged = Array.from(new Set([...existing, ...list]))
+      form.target = merged.join('\n')
+      ElMessage.success(`Загружено таргетов: ${list.length}`)
+    } else {
+      ElMessage.error(res.msg || 'Ошибка загрузки таргетов')
+    }
+  } catch (e) {
+    ElMessage.error(e?.message || 'Ошибка загрузки')
+  } finally {
+    loadingOrgTargets.value = false
+  }
+}
+
+async function loadAssetsFromOrg() {
+  if (!form.orgId) return
+  loadingOrgAssets.value = true
+  try {
+    const res = await request.post('/asset/list', {
+      orgId: form.orgId,
+      page: 1,
+      pageSize: 5000
+    })
+    if (res.code === 0) {
+      const list = (res.list || [])
+        .map(a => {
+          if (a.host && a.port) return `${a.host}:${a.port}`
+          return a.host || a.url || a.ip || ''
+        })
+        .filter(Boolean)
+      const existing = (form.target || '').split(/[\s,;]+/).map(s => s.trim()).filter(Boolean)
+      const merged = Array.from(new Set([...existing, ...list]))
+      form.target = merged.join('\n')
+      ElMessage.success(`Загружено ассетов: ${list.length}`)
+    } else {
+      ElMessage.error(res.msg || 'Ошибка загрузки ассетов')
+    }
+  } catch (e) {
+    ElMessage.error(e?.message || 'Ошибка загрузки')
+  } finally {
+    loadingOrgAssets.value = false
+  }
+}
+
 async function loadWorkers() {
   try {
     const res = await getWorkerList()
@@ -2028,7 +2107,7 @@ async function selectAllCustomPocs() {
       }
     })
     
-    // 更新当前页表格选中状态
+    // 更新当前页��格选中状态
     await nextTick()
     if (customPocTableRef.value) {
       customPocList.value.forEach(row => {
@@ -2379,6 +2458,14 @@ function confirmRecursiveDictSelection() {
     margin-left: 10px;
     color: var(--el-text-color-secondary);
     font-size: 12px;
+  }
+
+  .target-helpers {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
   }
 
   .secondary-hint {

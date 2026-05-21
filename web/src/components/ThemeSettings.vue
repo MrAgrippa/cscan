@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="theme-settings">
     <div class="setting-section">
       <h3>{{ $t('theme.mode') }}</h3>
@@ -78,7 +78,7 @@ const colorThemes = [
 
 function getLanguageName(locale) {
   const names = {
-    'zh-CN': '简体中文',
+    'ru-RU': 'Русский',
     'en-US': 'English'
   }
   return names[locale] || locale

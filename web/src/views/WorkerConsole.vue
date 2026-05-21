@@ -601,13 +601,13 @@ function formatBytes(bytes) {
 function formatTime(timestamp) {
   if (!timestamp) return '-'
   const date = new Date(timestamp * 1000)
-  return date.toLocaleString('zh-CN')
+  return date.toLocaleString('ru-RU')
 }
 
 function formatAuditTime(timeStr) {
   if (!timeStr) return '-'
   const date = new Date(timeStr)
-  return date.toLocaleString('zh-CN')
+  return date.toLocaleString('ru-RU')
 }
 
 function getLoadColor(value) {

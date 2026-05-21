@@ -27,12 +27,12 @@ import { Position, ArrowDown } from '@element-plus/icons-vue'
 const localeStore = useLocaleStore()
 
 function getCurrentLanguageLabel() {
-  return localeStore.currentLocale === 'zh-CN' ? '中文' : 'EN'
+  return localeStore.currentLocale === 'ru-RU' ? 'РУ' : 'EN'
 }
 
 function getLanguageName(locale) {
   const names = {
-    'zh-CN': '简体中文',
+    'ru-RU': 'Русский',
     'en-US': 'English'
   }
   return names[locale] || locale
